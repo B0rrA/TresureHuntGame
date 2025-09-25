@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Búsqueda del Tesoro - Aventura Personal</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="game-container">
+        <!-- Pantalla de inicio -->
+        <div id="start-screen" class="screen active">
+            <div class="welcome-content">
+                <h1>Búsqueda del Tesoro</h1>
+                <p class="subtitle">Una aventura personal hacia la fiesta de cumpleaños de B0rrA</p>
+                <div class="treasure-map-preview">
+                    <div class="map-pieces">
+                        <div class="map-piece" data-piece="1"></div>
+                        <div class="map-piece" data-piece="2"></div>
+                        <div class="map-piece" data-piece="3"></div>
+                        <div class="map-piece" data-piece="4"></div>
+                    </div>
+                </div>
+                <form id="player-form" class="player-form">
+                    <input type="text" id="player-name" placeholder="Ingresa tu nombre de aventurero" required>
+                    <button type="submit">¡Comenzar Aventura!</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Pantalla principal del juego -->
+        <div id="game-screen" class="screen">
+            <header class="game-header">
+                <div class="player-info">
+                    <span id="player-display-name"></span>
+                </div>
+                <div class="progress-info">
+                    <div class="progress-bar-container">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progress-fill"></div>
+                        </div>
+                        <span>Progreso: <span id="progress-count">0</span>/4 desafíos</span>
+                    </div>
+                </div>
+            </header>
+
+            <main class="game-main">
+                <!-- Mapa del tesoro -->
+                <div class="treasure-map-container" id="map-section">
+                    <h2>🗺️ Mapa de Asunción</h2>
+                    <p class="map-subtitle">Completa los desafíos para revelar la ubicación del tesoro</p>
+                    
+                    <!-- Mapa progresivo -->
+                    <div class="progressive-map-container">
+                        <div id="progressive-map" class="progressive-map"></div>
+                        <div class="map-reveal-overlay" id="map-reveal-overlay">
+                            <div class="reveal-text">
+                                <h3>🔍 Buscando el tesoro...</h3>
+                                <p>Completa los desafíos para revelar la ubicación</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="section-navigation">
+                        <button class="nav-btn" onclick="scrollToSection('challenges-section')">
+                            ⬇️ Ver Desafíos
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Área de desafíos -->
+                <div class="challenges-container" id="challenges-section">
+                    <h2>🎯 Desafíos Disponibles</h2>
+                    <div id="challenges-list" class="challenges-list">
+                        <!-- Los desafíos se generarán dinámicamente -->
+                    </div>
+                    <div class="section-navigation">
+                        <button class="nav-btn" onclick="scrollToSection('map-section')">
+                            ⬆️ Ver Mapa
+                        </button>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- Pantalla de victoria -->
+        <div id="victory-screen" class="screen">
+            <div class="victory-content">
+                <h1>🎉 ¡Felicidades! 🎉</h1>
+                <p>Has completado todos los desafíos y encontrado el tesoro!</p>
+                <div class="complete-map">
+                    <h3>🗺️ Tu mapa completo revela la ubicación:</h3>
+                    <div class="treasure-location">
+                        <h4>🏴‍☠️ Los Lopez - Bar de Rio 🏴‍☠️</h4>
+                        <p>📍 Costanera de Asunción, Paraguay</p>
+                        <p>🎂 ¡Tu fiesta de cumpleaños te espera aquí!</p>
+                    </div>
+                    <div class="map-container">
+                        <div id="map" class="openstreet-map"></div>
+                    </div>
+                </div>
+                <div class="victory-buttons">
+                    <button id="directions-btn" class="directions-btn">🗺️ Cómo llegar</button>
+                    <button id="show-answers-btn" class="answers-btn" onclick="showCompletedAnswers()">📋 Ver Respuestas Completadas</button>
+                    <button id="restart-btn" class="restart-btn">Jugar de nuevo</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
