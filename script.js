@@ -6,7 +6,10 @@ class TreasureHuntGame {
       playerName: '',
       completedChallenges: 0,
       mapPieces: [false, false, false, false],
-      currentScreen: 'start'
+      currentScreen: 'start',
+      startTime: null,
+      endTime: null,
+      totalTime: 0
     };
 
     // Banco de 10 desafíos - se seleccionarán 4 aleatoriamente
@@ -147,6 +150,10 @@ class TreasureHuntGame {
     // Botón de cómo llegar
     const directionsBtn = document.getElementById('directions-btn');
     directionsBtn?.addEventListener('click', () => this.openDirections());
+
+    // Botón de compartir
+    const shareBtn = document.getElementById('share-btn');
+    shareBtn?.addEventListener('click', () => this.shareResult());
   }
 
   handlePlayerSubmit(e) {
@@ -165,6 +172,11 @@ class TreasureHuntGame {
   startGame() {
     // Seleccionar 4 desafíos aleatorios
     this.selectRandomChallenges();
+    
+    // Iniciar el cronómetro
+    this.gameState.startTime = Date.now();
+    this.gameState.endTime = null;
+    this.gameState.totalTime = 0;
     
     this.gameState.currentScreen = 'game';
     this.showScreen('game-screen');
@@ -342,8 +354,10 @@ class TreasureHuntGame {
     // Crear modal para la pregunta
     const modal = document.createElement('div');
     modal.className = 'challenge-modal';
+    modal.setAttribute('data-theme', challenge.theme || 'default');
+    
     modal.innerHTML = `
-      <div class="modal-content">
+      <div class="modal-content challenge-item" data-theme="${challenge.theme || 'default'}">
         <div class="modal-header">
           <h3>${challenge.title}</h3>
           <button class="close-modal">&times;</button>
@@ -359,114 +373,34 @@ class TreasureHuntGame {
         </div>
       </div>
     `;
-
-    // Estilos del modal
-    modal.style.cssText = `
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.8);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-    `;
-
-    const modalContent = modal.querySelector('.modal-content');
-    modalContent.style.cssText = `
-      background: white;
-      padding: 30px;
-      border-radius: 15px;
-      max-width: 500px;
-      width: 90%;
-      text-align: center;
-      border: 3px solid #8B4513;
-    `;
-
-    // Agregar estilos para los botones de opciones
+    
+    // NO agregar estilos inline para .option-btn - dejar que styles.css los maneje
+    // Solo agregamos estilos que NO están en styles.css
     const style = document.createElement('style');
     style.textContent = `
-      .challenge-modal .options {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        margin: 20px 0;
-      }
-      .challenge-modal .option-btn {
-        padding: 12px 20px;
-        border: 2px solid #8B4513;
-        background: #f8f9fa;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        font-size: 1rem;
-      }
-      .challenge-modal .option-btn:hover {
-        background: #DAA520;
-        color: white;
-        transform: translateY(-2px);
-      }
       .challenge-modal .hint {
         margin-top: 15px;
         font-style: italic;
         color: #666;
       }
-       .challenge-modal .close-modal {
-         background: none;
-         border: none;
-         font-size: 1.5rem;
-         cursor: pointer;
-         float: right;
-       }
-       .challenge-modal .video-link {
-         margin-top: 15px;
-         text-align: center;
-       }
-       .challenge-modal .video-link a {
-         color: #DAA520;
-         text-decoration: none;
-         font-weight: bold;
-         padding: 8px 16px;
-         border: 2px solid #DAA520;
-         border-radius: 20px;
-         display: inline-block;
-         transition: all 0.3s ease;
-       }
-       .challenge-modal .video-link a:hover {
-         background: #DAA520;
-         color: white;
-         transform: translateY(-2px);
-       }
-       .challenge-modal .song-link {
-         margin-top: 15px;
-         text-align: center;
-       }
-       .challenge-modal .song-link a {
-         color: #FF6B35;
-         text-decoration: none;
-         font-weight: bold;
-         padding: 8px 16px;
-         border: 2px solid #FF6B35;
-         border-radius: 20px;
-         display: inline-block;
-         transition: all 0.3s ease;
-       }
-       .challenge-modal .song-link a:hover {
-         background: #FF6B35;
-         color: white;
-         transform: translateY(-2px);
-       }
     `;
     document.head.appendChild(style);
 
+    // Agregar modal al DOM
     document.body.appendChild(modal);
 
-    // Event listeners para las opciones
+    // Configurar event listeners INMEDIATAMENTE después de agregar al DOM
     const optionButtons = modal.querySelectorAll('.option-btn');
+    const modalTheme = modal.getAttribute('data-theme');
+    
     optionButtons.forEach((button, index) => {
-      button.addEventListener('click', () => this.handleAnswer(challenge, index, modal));
+      // Agregar data-theme a cada botón
+      button.setAttribute('data-theme', modalTheme);
+      
+      // Event listener de click
+      button.addEventListener('click', () => {
+        this.handleAnswer(challenge, index, modal);
+      });
     });
 
     // Event listener para cerrar modal
@@ -673,12 +607,39 @@ class TreasureHuntGame {
   }
 
   showVictoryScreen() {
+    // Calcular el tiempo total del juego
+    this.gameState.endTime = Date.now();
+    this.gameState.totalTime = this.gameState.endTime - this.gameState.startTime;
+    
     this.gameState.currentScreen = 'victory';
     this.showScreen('victory-screen');
     
     // Inicializar el mapa cuando se muestra la pantalla de victoria
     if (!this.mapInitialized) {
       this.initializeMap();
+    }
+    
+    // Actualizar el display del tiempo en la pantalla de victoria
+    this.updateVictoryTimeDisplay();
+  }
+
+  updateVictoryTimeDisplay() {
+    const timeDisplay = document.getElementById('victory-time-display');
+    if (timeDisplay) {
+      const formattedTime = this.formatTime(this.gameState.totalTime);
+      timeDisplay.textContent = `⏱️ Tiempo total: ${formattedTime}`;
+    }
+  }
+
+  formatTime(milliseconds) {
+    const totalSeconds = Math.floor(milliseconds / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    
+    if (minutes > 0) {
+      return `${minutes}:${seconds.toString().padStart(2, '0')} minutos`;
+    } else {
+      return `${seconds} segundos`;
     }
   }
 
@@ -851,13 +812,408 @@ class TreasureHuntGame {
     window.open(googleMapsUrl, '_blank');
   }
 
+  async shareResult() {
+    try {
+      // Generar imagen del resultado
+      const imageBlob = await this.generateResultImage();
+      
+      // Verificar si el navegador soporta Web Share API
+      if (navigator.share && navigator.canShare) {
+        const shareData = {
+          title: '¡Tesoro Encontrado! 🏴‍☠️',
+          text: `¡${this.gameState.playerName} completó la búsqueda del tesoro en ${this.formatTime(this.gameState.totalTime)}! ¿Podrás encontrar el tesoro también? 🗺️`,
+          files: [new File([imageBlob], 'tesoro-encontrado.png', { type: 'image/png' })]
+        };
+        
+        if (navigator.canShare(shareData)) {
+          await navigator.share(shareData);
+        } else {
+          // Fallback: descargar imagen
+          this.downloadImage(imageBlob);
+        }
+      } else {
+        // Fallback: descargar imagen
+        this.downloadImage(imageBlob);
+      }
+    } catch (error) {
+      console.error('Error al compartir:', error);
+      // Fallback: descargar imagen
+      const imageBlob = await this.generateResultImage();
+      this.downloadImage(imageBlob);
+    }
+  }
+
+  // ===== Ajustes generales (puedes cambiarlos) =====
+  async generateResultImage() {
+    const WIDTH = 1200;  // ideal para compartir en redes (Open Graph)
+    const HEIGHT = 630;
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = WIDTH;
+    canvas.height = HEIGHT;
+
+    // Fondo estilo mapa
+    this.createEpicBackground(ctx, canvas, WIDTH, HEIGHT);
+
+    // Ruta, brújula, olas
+    this.drawTreasurePath(ctx, canvas, WIDTH, HEIGHT);
+    this.drawCompassRose(ctx, canvas, WIDTH, HEIGHT);
+    this.drawSeaWaves(ctx, canvas, WIDTH, HEIGHT);
+
+
+    // Título, nombre, tiempo
+    this.drawHeroTitleFoil(ctx, '¡TESORO ENCONTRADO!', WIDTH, HEIGHT);
+    this.drawNamePlate(ctx, 'Aventurero: ' + (this.gameState.playerName || 'Anónimo'), WIDTH, HEIGHT);
+    this.drawTimeBadge(ctx, this.formatTime(this.gameState.totalTime), WIDTH, HEIGHT);
+
+    // Subtextos / CTA (ajustados más abajo)
+    this.drawSubtexts(ctx, canvas, WIDTH, HEIGHT);
+
+    // Efectos
+    this.addVignette(ctx, canvas, WIDTH, HEIGHT);
+    this.addSparkles(ctx, canvas, WIDTH, HEIGHT);
+    this.addPaperGrain(ctx, canvas, 0.06, WIDTH, HEIGHT);
+
+    return new Promise(resolve => {
+      canvas.toBlob(blob => resolve(blob), 'image/png', 0.95);
+    });
+  }
+
+    // ====== Fondo épico (pergamino sobre mar) ======
+    createEpicBackground(ctx, canvas, WIDTH, HEIGHT) {
+      // mar
+      var sea = ctx.createLinearGradient(0, 0, 0, HEIGHT);
+      sea.addColorStop(0, '#0b3a5a');
+      sea.addColorStop(0.5, '#0e567e');
+      sea.addColorStop(1, '#107ba3');
+      ctx.fillStyle = sea;
+      ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+      // “sol” suave
+      var sun = ctx.createRadialGradient(WIDTH * 0.2, HEIGHT * 0.25, 10, WIDTH * 0.2, HEIGHT * 0.25, WIDTH * 0.6);
+      sun.addColorStop(0, 'rgba(255,230,150,0.35)');
+      sun.addColorStop(1, 'rgba(255,230,150,0)');
+      ctx.fillStyle = sun;
+      ctx.beginPath();
+      ctx.arc(WIDTH * 0.2, HEIGHT * 0.25, WIDTH * 0.6, 0, Math.PI * 2);
+      ctx.fill();
+
+      // pergamino rasgado
+      var pad = 40;
+      var parchment = new Path2D();
+      var x0 = pad, y0 = pad, x1 = WIDTH - pad, y1 = HEIGHT - pad;
+
+      parchment.moveTo(x0 + 20, y0);
+      for (var x = x0 + 20; x <= x1 - 20; x += 60) {
+        parchment.quadraticCurveTo(x + 20, y0 + (Math.random() * 18 - 9), x + 60, y0 + (Math.random() * 12));
+      }
+      parchment.lineTo(x1, y0 + 20);
+      for (var y = y0 + 20; y <= y1 - 20; y += 60) {
+        parchment.quadraticCurveTo(x1 + (Math.random() * 18 - 9), y + 20, x1 + (Math.random() * 12), y + 60);
+      }
+      parchment.lineTo(x1 - 20, y1);
+      for (var x2 = x1 - 20; x2 >= x0 + 20; x2 -= 60) {
+        parchment.quadraticCurveTo(x2 - 20, y1 + (Math.random() * 18 - 9), x2 - 60, y1 + (Math.random() * 12));
+      }
+      parchment.lineTo(x0, y1 - 20);
+      for (var y2 = y1 - 20; y2 >= y0 + 20; y2 -= 60) {
+        parchment.quadraticCurveTo(x0 + (Math.random() * 18 - 9), y2 - 20, x0 + (Math.random() * 12), y2 - 60);
+      }
+      parchment.closePath();
+
+      // relleno pergamino
+      var pap = ctx.createLinearGradient(0, y0, 0, y1);
+      pap.addColorStop(0, '#f8e7c6');
+      pap.addColorStop(0.5, '#f1d8a8');
+      pap.addColorStop(1, '#eacb91');
+
+      ctx.fillStyle = pap;
+      ctx.save();
+      ctx.shadowColor = 'rgba(0,0,0,0.25)';
+      ctx.shadowBlur = 24;
+      ctx.shadowOffsetY = 8;
+      ctx.fill(parchment);
+
+      // bordes “quemados”
+      ctx.clip(parchment);
+      var burn = ctx.createLinearGradient(0, y0, 0, y1);
+      burn.addColorStop(0, 'rgba(120,77,30,0.30)');
+      burn.addColorStop(0.5, 'rgba(120,77,30,0.10)');
+      burn.addColorStop(1, 'rgba(120,77,30,0.30)');
+      ctx.strokeStyle = 'rgba(90,50,20,0.6)';
+      ctx.lineWidth = 5;
+      ctx.stroke(parchment);
+      ctx.globalCompositeOperation = 'multiply';
+      ctx.fillStyle = burn;
+      ctx.fillRect(x0, y0, x1 - x0, y1 - y0);
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.restore();
+
+      // retícula sutil
+      ctx.save();
+      ctx.clip(parchment);
+      ctx.strokeStyle = 'rgba(80,50,20,0.08)';
+      ctx.lineWidth = 1;
+      for (var gx = x0 + 50; gx < x1 - 50; gx += 50) {
+        ctx.beginPath(); ctx.moveTo(gx, y0 + 50); ctx.lineTo(gx, y1 - 50); ctx.stroke();
+      }
+      for (var gy = y0 + 50; gy < y1 - 50; gy += 50) {
+        ctx.beginPath(); ctx.moveTo(x0 + 50, gy); ctx.lineTo(x1 - 50, gy); ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    // ===== Ruta punteada y "X" =====
+    drawTreasurePath(ctx, canvas, WIDTH, HEIGHT) {
+      var points = [
+        { x: WIDTH * 0.2, y: HEIGHT * 0.35 },
+        { x: WIDTH * 0.35, y: HEIGHT * 0.42 },
+        { x: WIDTH * 0.5,  y: HEIGHT * 0.38 },
+        { x: WIDTH * 0.65, y: HEIGHT * 0.48 },
+        { x: WIDTH * 0.78, y: HEIGHT * 0.56 }
+      ];
+      ctx.save();
+      ctx.setLineDash([10, 12]);
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = 'rgba(120,40,30,0.85)';
+      ctx.beginPath();
+      ctx.moveTo(points[0].x, points[0].y);
+      for (var i = 1; i < points.length; i++) {
+        ctx.quadraticCurveTo(
+          (points[i - 1].x + points[i].x) / 2, points[i - 1].y - 25,
+          points[i].x, points[i].y
+        );
+      }
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // “X” final
+      var end = points[points.length - 1];
+      ctx.translate(end.x, end.y);
+      ctx.rotate(-0.25);
+      ctx.strokeStyle = '#8b0000';
+      ctx.lineWidth = 10;
+      ctx.beginPath(); ctx.moveTo(-20, -20); ctx.lineTo(20, 20); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(-20, 20); ctx.lineTo(20, -20); ctx.stroke();
+      ctx.restore();
+    }
+
+    // ===== Brújula =====
+    drawCompassRose(ctx, canvas, WIDTH, HEIGHT) {
+      var cx = WIDTH * 0.14, cy = HEIGHT * 0.2, r = 60;
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.strokeStyle = 'rgba(60,35,20,0.7)'; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(0, 0, r + 10, 0, Math.PI * 2); ctx.stroke();
+      for (var i = 0; i < 8; i++) {
+        ctx.rotate(Math.PI / 4);
+        ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, -r); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(-8, -r * 0.6); ctx.lineTo(0, -r); ctx.lineTo(8, -r * 0.6);
+        ctx.closePath();
+        ctx.fillStyle = (i % 2 === 0) ? 'rgba(120,60,30,0.7)' : 'rgba(200,150,90,0.7)';
+        ctx.fill();
+      }
+      ctx.fillStyle = 'rgba(60,35,20,0.9)';
+      ctx.font = 'bold 22px system-ui, Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('N', 0, -r - 16);
+      ctx.restore();
+    }
+
+    // ===== Olas discretas =====
+    drawSeaWaves(ctx, canvas, WIDTH, HEIGHT) {
+      ctx.save();
+      ctx.globalAlpha = 0.35;
+      ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+      ctx.lineWidth = 2;
+      for (var y = HEIGHT * 0.8; y < HEIGHT; y += 14) {
+        ctx.beginPath();
+        for (var x = 0; x <= WIDTH; x += 12) {
+          var dy = Math.sin((x + y) * 0.02) * 3;
+          ctx.lineTo(x, y + dy);
+        }
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+
+    // ===== Título con foil dorado =====
+    drawHeroTitleFoil(ctx, text, WIDTH, HEIGHT) {
+      var x = WIDTH * 0.5, y = HEIGHT * 0.22;
+      ctx.save();
+
+      // sombra
+      ctx.shadowColor = 'rgba(0,0,0,0.35)';
+      ctx.shadowBlur = 24;
+      ctx.shadowOffsetY = 8;
+
+      // fondo cinta
+      this.roundRect(ctx, x - 430, y - 60, 860, 120, 24);
+      ctx.fillStyle = 'rgba(20,12,6,0.25)';
+      ctx.fill();
+
+      // gradiente “foil”
+      var foil = ctx.createLinearGradient(x - 200, y - 40, x + 200, y + 40);
+      foil.addColorStop(0.0, '#a67c00');
+      foil.addColorStop(0.2, '#ffdc73');
+      foil.addColorStop(0.5, '#fff4c2');
+      foil.addColorStop(0.8, '#d5b54a');
+      foil.addColorStop(1.0, '#8c6a1f');
+
+      ctx.font = '900 68px system-ui, Segoe UI, Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      ctx.lineWidth = 10; ctx.strokeStyle = 'rgba(60,35,20,0.6)'; ctx.strokeText(text, x, y);
+      ctx.lineWidth = 4;  ctx.strokeStyle = 'rgba(255,255,255,0.6)'; ctx.strokeText(text, x, y + 3);
+      ctx.fillStyle = foil; ctx.fillText(text, x, y);
+      ctx.restore();
+    }
+
+    // ===== Placa de nombre =====
+    drawNamePlate(ctx, text, WIDTH, HEIGHT) {
+      var x = WIDTH * 0.5, y = HEIGHT * 0.34;
+      var w = 560, h = 54;
+      ctx.save();
+      this.roundRect(ctx, x - w/2, y - h/2, w, h, 14);
+      ctx.fillStyle = 'rgba(255,255,255,0.85)'; ctx.fill();
+      ctx.strokeStyle = 'rgba(60,35,20,0.35)'; ctx.lineWidth = 2; ctx.stroke();
+
+      ctx.font = '700 26px system-ui, Arial'; ctx.fillStyle = '#2c3e50';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(text, x, y);
+      ctx.restore();
+    }
+
+    // ===== Insignia de tiempo =====
+    drawTimeBadge(ctx, timeText, WIDTH, HEIGHT) {
+      var x = WIDTH * 0.5, y = HEIGHT * 0.46;
+      var w = 520, h = 86;
+      ctx.save();
+      this.roundRect(ctx, x - w/2, y - h/2, w, h, 18);
+      var grad = ctx.createLinearGradient(x - w/2, y - h/2, x + w/2, y + h/2);
+      grad.addColorStop(0, '#e67e22');
+      grad.addColorStop(1, '#f1a94e');
+      ctx.fillStyle = grad; ctx.fill();
+      ctx.strokeStyle = 'rgba(0,0,0,0.2)'; ctx.lineWidth = 3; ctx.stroke();
+
+      // icono reloj
+      ctx.fillStyle = 'rgba(255,255,255,0.95)';
+      ctx.beginPath(); ctx.arc(x - w/2 + 54, y, 22, 0, Math.PI*2); ctx.fill();
+      ctx.strokeStyle = '#e67e22'; ctx.lineWidth = 3; ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x - w/2 + 54, y - 10); ctx.lineTo(x - w/2 + 54, y + 6); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x - w/2 + 54, y); ctx.lineTo(x - w/2 + 66, y + 10); ctx.stroke();
+
+      // texto
+      ctx.font = '800 36px system-ui, Arial';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#ffffff';
+      ctx.shadowColor = 'rgba(0,0,0,0.25)'; ctx.shadowBlur = 8; ctx.shadowOffsetY = 3;
+      ctx.fillText('Tiempo: ' + timeText, x + 40, y);
+      ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+      ctx.restore();
+    }
+
+    // ===== Subtextos / CTA / fecha / URL (QR look opcional) =====
+    drawSubtexts(ctx, canvas, WIDTH, HEIGHT) {
+      const now = new Date();
+      const dateStr = now.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+      const timeStr = now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+
+      ctx.textAlign = 'center';
+
+      // Línea 1
+      ctx.font = '600 28px system-ui, Arial';
+      ctx.fillStyle = '#5a3b1e';
+      ctx.fillText('🗺️ El tesoro ha sido descubierto • ¿Podrás encontrarlo tú también?', WIDTH * 0.5, HEIGHT * 0.64);
+
+      // Línea 2
+      ctx.font = '500 24px system-ui, Arial';
+      ctx.fillStyle = '#6b4a25';
+      ctx.fillText('Completa 4 desafíos y revela la ubicación secreta', WIDTH * 0.5, HEIGHT * 0.69);
+
+      // Fecha
+      ctx.font = '500 20px system-ui, Arial';
+      ctx.fillStyle = '#7f5a2e';
+      ctx.fillText(`Completado el ${dateStr} a las ${timeStr}`, WIDTH * 0.5, HEIGHT * 0.74);
+
+      // CTA
+      ctx.font = '800 26px system-ui, Arial';
+      ctx.fillStyle = '#2c3e50';
+      ctx.fillText('🏴‍☠️ ¡Únete a la aventura! 🏴‍☠️', WIDTH * 0.5, HEIGHT * 0.80);
+    }
+
+    // ===== Efectos finales =====
+    addVignette(ctx, canvas, WIDTH, HEIGHT) {
+      var v = ctx.createRadialGradient(WIDTH/2, HEIGHT/2, WIDTH*0.2, WIDTH/2, HEIGHT/2, WIDTH*0.7);
+      v.addColorStop(0, 'rgba(0,0,0,0)');
+      v.addColorStop(1, 'rgba(0,0,0,0.35)');
+      ctx.fillStyle = v;
+      ctx.fillRect(0,0,WIDTH,HEIGHT);
+    }
+
+    addSparkles(ctx, canvas, WIDTH, HEIGHT) {
+      ctx.save();
+      for (var i = 0; i < 30; i++) {
+        var x = WIDTH * (0.45 + Math.random() * 0.4);
+        var y = HEIGHT * (0.45 + Math.random() * 0.25);
+        var r = 1 + Math.random() * 2.2;
+        ctx.globalAlpha = 0.4 + Math.random() * 0.6;
+        ctx.fillStyle = '#fff6b0';
+        ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2); ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    addPaperGrain(ctx, canvas, intensity, WIDTH, HEIGHT) {
+      if (typeof intensity !== 'number') intensity = 0.05;
+      var imgData = ctx.getImageData(0, 0, WIDTH, HEIGHT);
+      var d = imgData.data;
+      for (var i = 0; i < d.length; i += 4) {
+        var n = (Math.random() - 0.5) * 255 * intensity;
+        d[i]   = Math.min(255, Math.max(0, d[i]   + n));
+        d[i+1] = Math.min(255, Math.max(0, d[i+1] + n));
+        d[i+2] = Math.min(255, Math.max(0, d[i+2] + n));
+      }
+      ctx.putImageData(imgData, 0, 0);
+    }
+
+    // ===== Utilidad =====
+    roundRect(ctx, x, y, w, h, r) {
+      var rr = Math.min(r, w/2, h/2);
+      ctx.beginPath();
+      ctx.moveTo(x + rr, y);
+      ctx.arcTo(x + w, y, x + w, y + h, rr);
+      ctx.arcTo(x + w, y + h, x, y + h, rr);
+      ctx.arcTo(x, y + h, x, y, rr);
+      ctx.arcTo(x, y, x + w, y, rr);
+      ctx.closePath();
+    }
+
+
+
+  downloadImage(imageBlob) {
+    const url = URL.createObjectURL(imageBlob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `tesoro-encontrado-${this.gameState.playerName}-${Date.now()}.png`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
   restartGame() {
     // Resetear estado del juego completamente
     this.gameState = {
       playerName: this.gameState.playerName, // Mantener el nombre del jugador
       completedChallenges: 0,
       mapPieces: [false, false, false, false],
-      currentScreen: 'start'
+      currentScreen: 'start',
+      startTime: null,
+      endTime: null,
+      totalTime: 0
     };
 
     // Limpiar desafíos completados
@@ -1000,6 +1356,21 @@ function initMap() {
 
 // Inicializar el juego cuando se carga la página
 document.addEventListener('DOMContentLoaded', () => {
+  console.log('🚀 Inicializando juego...');
+  console.log('📄 CSS cargado:', document.querySelector('link[href*="styles.css"]') ? 'Sí' : 'No');
+  console.log('📄 Versión CSS:', document.querySelector('link[href*="styles.css"]')?.href);
+  
+  // Verificar si los estilos temáticos están disponibles
+  const testDiv = document.createElement('div');
+  testDiv.className = 'challenge-item';
+  testDiv.setAttribute('data-theme', 'color');
+  document.body.appendChild(testDiv);
+  const testStyle = window.getComputedStyle(testDiv);
+  console.log('🎨 Test de estilos temáticos:');
+  console.log('  - Background:', testStyle.background);
+  console.log('  - Border-color:', testStyle.borderColor);
+  document.body.removeChild(testDiv);
+  
   window.treasureHuntGame = new TreasureHuntGame();
 });
 

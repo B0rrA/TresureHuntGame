@@ -3,9 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Búsqueda del Tesoro - Aventura Personal</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=1.2.0">
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -27,7 +30,7 @@
                     </div>
                 </div>
                 <form id="player-form" class="player-form">
-                    <input type="text" id="player-name" placeholder="Ingresa tu nombre de aventurero" required>
+                    <input type="text" id="player-name" placeholder="Ingresa tu nombre de aventurero/a" required>
                     <button type="submit">¡Comenzar Aventura!</button>
                 </form>
             </div>
@@ -93,6 +96,8 @@
             <div class="victory-content">
                 <h1>🎉 ¡Felicidades! 🎉</h1>
                 <p>Has completado todos los desafíos y encontrado el tesoro!</p>
+                <div id="victory-time-display" class="victory-time-display">⏱️ Tiempo total: 0 segundos</div>
+                <button id="share-btn" class="share-btn">📤 Compartir Resultado</button>
                 <div class="complete-map">
                     <h3>🗺️ Tu mapa completo revela la ubicación:</h3>
                     <div class="treasure-location">
@@ -113,7 +118,55 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script src="script.js?v=1.2.0"></script>
+    
+    <!-- Script de diagnóstico -->
+    <script>
+      // Verificar CSS después de que se carga
+      window.addEventListener('load', () => {
+        
+        // Verificar si el CSS se cargó
+        const cssLink = document.querySelector('link[href*="styles.css"]');
+        
+        // Verificar reglas CSS específicas
+        const styleSheets = Array.from(document.styleSheets);
+        let foundThematicStyles = false;
+        
+        styleSheets.forEach((sheet, index) => {
+          try {
+            const rules = Array.from(sheet.cssRules || []);
+            const thematicRules = rules.filter(rule => 
+              rule.selectorText && rule.selectorText.includes('[data-theme="color"]')
+            );
+            if (thematicRules.length > 0) {
+              foundThematicStyles = true;
+            }
+          } catch (e) {
+            console.log(`❌ Error accediendo a stylesheet ${index}:`, e.message);
+          }
+        });
+        
+        if (!foundThematicStyles) {
+          console.log('❌ NO SE ENCONTRARON ESTILOS TEMÁTICOS');
+        }
+        
+        // Test manual de estilos
+        const testEl = document.createElement('div');
+        testEl.className = 'challenge-item';
+        testEl.setAttribute('data-theme', 'color');
+        testEl.style.position = 'absolute';
+        testEl.style.top = '-9999px';
+        document.body.appendChild(testEl);
+        
+        const computed = window.getComputedStyle(testEl);
+        console.log('🎨 Test manual de estilos:');
+        console.log('  - Background:', computed.background);
+        console.log('  - Background-color:', computed.backgroundColor);
+        console.log('  - Border-color:', computed.borderColor);
+        
+        document.body.removeChild(testEl);
+      });
+    </script>
 </body>
 </html>
 

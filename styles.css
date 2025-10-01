@@ -546,6 +546,7 @@ h1 {
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
+  transform: translateY(0) scale(1);
 }
 
 .challenge-item::before {
@@ -559,11 +560,14 @@ h1 {
   transition: left 0.5s;
 }
 
-.challenge-item:hover::before {
+/* Hover para desafíos sin tema específico */
+.challenge-item:not([data-theme]):hover::before,
+.challenge-item[data-theme="default"]:hover::before {
   left: 100%;
 }
 
-.challenge-item:hover {
+.challenge-item:not([data-theme]):hover,
+.challenge-item[data-theme="default"]:hover {
   transform: translateY(-5px) scale(1.02);
   box-shadow: 
     var(--shadow-deep),
@@ -631,6 +635,17 @@ h1 {
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
+.challenge-item[data-theme="color"]:hover::before {
+  left: 100%;
+}
+
+.challenge-item[data-theme="color"]:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 
+    var(--shadow-deep),
+    0 0 25px rgba(74, 144, 226, 0.4);
+}
+
 .challenge-item[data-theme="music"] {
   background: linear-gradient(135deg, #9B59B6, #8E44AD);
   border-color: #7D3C98;
@@ -640,6 +655,17 @@ h1 {
 .challenge-item[data-theme="music"] p {
   color: white;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.challenge-item[data-theme="music"]:hover::before {
+  left: 100%;
+}
+
+.challenge-item[data-theme="music"]:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 
+    var(--shadow-deep),
+    0 0 25px rgba(155, 89, 182, 0.4);
 }
 
 .challenge-item[data-theme="travel"] {
@@ -653,6 +679,17 @@ h1 {
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
+.challenge-item[data-theme="travel"]:hover::before {
+  left: 100%;
+}
+
+.challenge-item[data-theme="travel"]:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 
+    var(--shadow-deep),
+    0 0 25px rgba(230, 126, 34, 0.4);
+}
+
 .challenge-item[data-theme="sport"] {
   background: linear-gradient(135deg, #27AE60, #229954);
   border-color: #1E8449;
@@ -662,6 +699,17 @@ h1 {
 .challenge-item[data-theme="sport"] p {
   color: white;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.challenge-item[data-theme="sport"]:hover::before {
+  left: 100%;
+}
+
+.challenge-item[data-theme="sport"]:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 
+    var(--shadow-deep),
+    0 0 25px rgba(39, 174, 96, 0.4);
 }
 
 .challenge-item[data-theme="career"] {
@@ -675,6 +723,17 @@ h1 {
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
+.challenge-item[data-theme="career"]:hover::before {
+  left: 100%;
+}
+
+.challenge-item[data-theme="career"]:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 
+    var(--shadow-deep),
+    0 0 25px rgba(142, 68, 173, 0.4);
+}
+
 .challenge-item[data-theme="fear"] {
   background: linear-gradient(135deg, #8B0000, #DC143C);
   border-color: #B22222;
@@ -686,6 +745,17 @@ h1 {
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
+.challenge-item[data-theme="fear"]:hover::before {
+  left: 100%;
+}
+
+.challenge-item[data-theme="fear"]:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 
+    var(--shadow-deep),
+    0 0 25px rgba(220, 20, 60, 0.4);
+}
+
 .challenge-item[data-theme="location"] {
   background: linear-gradient(135deg, #2E8B57, #228B22);
   border-color: #006400;
@@ -695,6 +765,17 @@ h1 {
 .challenge-item[data-theme="location"] p {
   color: white;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.challenge-item[data-theme="location"]:hover::before {
+  left: 100%;
+}
+
+.challenge-item[data-theme="location"]:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 
+    var(--shadow-deep),
+    0 0 25px rgba(46, 139, 87, 0.4);
 }
 
 /* Enlaces de desafíos */
@@ -803,23 +884,7 @@ h1 {
   display: flex !important;
 }
 
-#victory-screen::before {
-  content: '🎉';
-  position: absolute;
-  top: 5%;
-  left: 10%;
-  font-size: 4rem;
-  animation: float 2s ease-in-out infinite;
-}
 
-#victory-screen::after {
-  content: '🏆';
-  position: absolute;
-  top: 10%;
-  right: 15%;
-  font-size: 3rem;
-  animation: float 2.5s ease-in-out infinite reverse;
-}
 
 .victory-content {
   text-align: center;
@@ -856,6 +921,28 @@ h1 {
   margin-bottom: 30px;
   color: var(--parchment-text);
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.victory-time-display {
+  background: var(--gradient-treasure);
+  color: white;
+  padding: 15px 25px;
+  border-radius: 15px;
+  font-size: 1.3rem;
+  font-weight: bold;
+  margin: 20px 0;
+  box-shadow: var(--shadow-treasure);
+  animation: treasurePulse 2s ease-in-out infinite alternate;
+  text-align: center;
+  border: 3px solid var(--treasure-gold-dark);
+}
+
+/* Estilo específico para el botón de compartir cuando está debajo del timer */
+.victory-content > .share-btn {
+  display: block;
+  margin: 20px auto;
+  max-width: 300px;
+  width: 100%;
 }
 
 .complete-map {
@@ -911,6 +998,7 @@ h1 {
   margin-top: 30px;
 }
 
+.share-btn,
 .directions-btn,
 .answers-btn,
 .restart-btn {
@@ -931,6 +1019,7 @@ h1 {
   overflow: hidden;
 }
 
+.share-btn::before,
 .directions-btn::before,
 .answers-btn::before,
 .restart-btn::before {
@@ -944,12 +1033,14 @@ h1 {
   transition: left 0.5s;
 }
 
+.share-btn:hover::before,
 .directions-btn:hover::before,
 .answers-btn:hover::before,
 .restart-btn:hover::before {
   left: 100%;
 }
 
+.share-btn:hover,
 .directions-btn:hover,
 .answers-btn:hover,
 .restart-btn:hover {
@@ -959,10 +1050,15 @@ h1 {
     0 10px 25px rgba(255, 215, 0, 0.4);
 }
 
+.share-btn:active,
 .directions-btn:active,
 .answers-btn:active,
 .restart-btn:active {
   transform: translateY(-1px) scale(1.02);
+}
+
+.share-btn {
+  background: linear-gradient(45deg, #FF6B35, #FF8C42);
 }
 
 .directions-btn {
@@ -986,6 +1082,150 @@ h1 {
   align-items: center;
   z-index: 1000;
   backdrop-filter: blur(5px);
+}
+
+/* Estilos temáticos para modales */
+.challenge-modal[data-theme="color"] .modal-content {
+  background: linear-gradient(135deg, #4A90E2, #357ABD) !important;
+  border-color: #2E5BBA !important;
+}
+
+.challenge-modal[data-theme="music"] .modal-content {
+  background: linear-gradient(135deg, #9B59B6, #8E44AD) !important;
+  border-color: #7D3C98 !important;
+}
+
+.challenge-modal[data-theme="travel"] .modal-content {
+  background: linear-gradient(135deg, #E67E22, #D35400) !important;
+  border-color: #BA4A00 !important;
+}
+
+.challenge-modal[data-theme="sport"] .modal-content {
+  background: linear-gradient(135deg, #27AE60, #229954) !important;
+  border-color: #1E8449 !important;
+}
+
+.challenge-modal[data-theme="career"] .modal-content {
+  background: linear-gradient(135deg, #8E44AD, #7D3C98) !important;
+  border-color: #6C3483 !important;
+}
+
+.challenge-modal[data-theme="fear"] .modal-content {
+  background: linear-gradient(135deg, #8B0000, #DC143C) !important;
+  border-color: #B22222 !important;
+}
+
+.challenge-modal[data-theme="location"] .modal-content {
+  background: linear-gradient(135deg, #2E8B57, #228B22) !important;
+  border-color: #006400 !important;
+}
+
+/* Texto blanco para modales temáticos */
+.challenge-modal[data-theme] .modal-content h3,
+.challenge-modal[data-theme] .modal-content p,
+.challenge-modal[data-theme] .modal-content .question {
+  color: white !important;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Hovers para botones de opciones en modales temáticos - Más específicos */
+.challenge-modal[data-theme="color"] .modal-content .option-btn:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+  transform: translateX(10px) scale(1.02) !important;
+  box-shadow: 0 0 15px rgba(74, 144, 226, 0.4) !important;
+}
+
+.challenge-modal[data-theme="music"] .modal-content .option-btn:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+  transform: translateX(10px) scale(1.02) !important;
+  box-shadow: 0 0 15px rgba(155, 89, 182, 0.4) !important;
+}
+
+.challenge-modal[data-theme="travel"] .modal-content .option-btn:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+  transform: translateX(10px) scale(1.02) !important;
+  box-shadow: 0 0 15px rgba(230, 126, 34, 0.4) !important;
+}
+
+.challenge-modal[data-theme="sport"] .modal-content .option-btn:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+  transform: translateX(10px) scale(1.02) !important;
+  box-shadow: 0 0 15px rgba(39, 174, 96, 0.4) !important;
+}
+
+.challenge-modal[data-theme="career"] .modal-content .option-btn:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+  transform: translateX(10px) scale(1.02) !important;
+  box-shadow: 0 0 15px rgba(142, 68, 173, 0.4) !important;
+}
+
+.challenge-modal[data-theme="fear"] .modal-content .option-btn:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+  transform: translateX(10px) scale(1.02) !important;
+  box-shadow: 0 0 15px rgba(220, 20, 60, 0.4) !important;
+}
+
+.challenge-modal[data-theme="location"] .modal-content .option-btn:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+  transform: translateX(10px) scale(1.02) !important;
+  box-shadow: 0 0 15px rgba(46, 139, 87, 0.4) !important;
+}
+
+/* Hovers alternativos para botones con data-theme individual */
+.option-btn[data-theme="color"]:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+  transform: translateX(10px) scale(1.02) !important;
+  box-shadow: 0 0 15px rgba(74, 144, 226, 0.4) !important;
+}
+
+.option-btn[data-theme="music"]:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+  transform: translateX(10px) scale(1.02) !important;
+  box-shadow: 0 0 15px rgba(155, 89, 182, 0.4) !important;
+}
+
+.option-btn[data-theme="travel"]:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+  transform: translateX(10px) scale(1.02) !important;
+  box-shadow: 0 0 15px rgba(230, 126, 34, 0.4) !important;
+}
+
+.option-btn[data-theme="sport"]:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+  transform: translateX(10px) scale(1.02) !important;
+  box-shadow: 0 0 15px rgba(39, 174, 96, 0.4) !important;
+}
+
+.option-btn[data-theme="career"]:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+  transform: translateX(10px) scale(1.02) !important;
+  box-shadow: 0 0 15px rgba(142, 68, 173, 0.4) !important;
+}
+
+.option-btn[data-theme="fear"]:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+  transform: translateX(10px) scale(1.02) !important;
+  box-shadow: 0 0 15px rgba(220, 20, 60, 0.4) !important;
+}
+
+.option-btn[data-theme="location"]:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+  transform: translateX(10px) scale(1.02) !important;
+  box-shadow: 0 0 15px rgba(46, 139, 87, 0.4) !important;
 }
 
 .modal-content {
@@ -1024,7 +1264,8 @@ h1 {
   line-height: 1.6;
 }
 
-.modal-options {
+.modal-options,
+.challenge-modal .options {
   display: flex;
   flex-direction: column;
   gap: 15px;
@@ -1056,11 +1297,10 @@ h1 {
   transition: left 0.5s;
 }
 
-.option-btn:hover::before {
-  left: 100%;
-}
+/* Efecto de brillo general eliminado para evitar conflictos con estilos temáticos */
 
-.option-btn:hover {
+/* Hover general solo para botones sin tema específico */
+.option-btn:not([data-theme]):hover {
   background: var(--gradient-treasure);
   color: white;
   transform: translateX(10px) scale(1.02);
@@ -1140,6 +1380,54 @@ h1 {
     font-size: 2.5rem;
   }
   
+  .subtitle {
+    font-size: 1.1rem;
+  }
+  
+  .player-info span {
+    font-size: 1.2rem;
+  }
+  
+  .progress-info span {
+    font-size: 1rem;
+  }
+  
+  .treasure-map-container h2 {
+    font-size: 1.5rem;
+  }
+  
+  .map-subtitle {
+    font-size: 1rem;
+  }
+  
+  .challenges-container h2 {
+    font-size: 1.5rem;
+  }
+  
+  .challenge-title {
+    font-size: 1.2rem;
+  }
+  
+  .challenge-description {
+    font-size: 1rem;
+  }
+  
+  .challenge-answer {
+    font-size: 0.95rem;
+  }
+  
+  .victory-time-display {
+    font-size: 1.1rem;
+    padding: 12px 20px;
+  }
+  
+  .complete-map h3 {
+    font-size: 1.3rem;
+  }
+  
+  .treasure-location {
+    font-size: 1.1rem;
+  }
   
   .welcome-content {
     padding: 40px 20px;
@@ -1153,6 +1441,10 @@ h1 {
     font-size: 2.5rem;
   }
   
+  .victory-content p {
+    font-size: 1.2rem;
+  }
+  
   .victory-buttons {
     flex-direction: column;
     align-items: center;
@@ -1163,6 +1455,12 @@ h1 {
   .restart-btn {
     width: 100%;
     max-width: 300px;
+    font-size: 1rem;
+  }
+  
+  .victory-content > .share-btn {
+    font-size: 1rem;
+    padding: 12px 20px;
   }
   
   .challenge-item {
@@ -1171,6 +1469,19 @@ h1 {
   
   .modal-content {
     padding: 30px 20px;
+  }
+  
+  .modal-content h3 {
+    font-size: 1.5rem;
+  }
+  
+  .modal-content p {
+    font-size: 1.1rem;
+  }
+  
+  .option-btn {
+    font-size: 1rem;
+    padding: 12px 15px;
   }
   
   .game-header {
@@ -1200,6 +1511,54 @@ h1 {
     font-size: 2rem;
   }
   
+  .subtitle {
+    font-size: 1rem;
+  }
+  
+  .player-info span {
+    font-size: 1.1rem;
+  }
+  
+  .progress-info span {
+    font-size: 0.9rem;
+  }
+  
+  .treasure-map-container h2 {
+    font-size: 1.3rem;
+  }
+  
+  .map-subtitle {
+    font-size: 0.9rem;
+  }
+  
+  .challenges-container h2 {
+    font-size: 1.3rem;
+  }
+  
+  .challenge-title {
+    font-size: 1.1rem;
+  }
+  
+  .challenge-description {
+    font-size: 0.95rem;
+  }
+  
+  .challenge-answer {
+    font-size: 0.9rem;
+  }
+  
+  .victory-time-display {
+    font-size: 1rem;
+    padding: 10px 15px;
+  }
+  
+  .complete-map h3 {
+    font-size: 1.2rem;
+  }
+  
+  .treasure-location {
+    font-size: 1rem;
+  }
   
   .welcome-content {
     padding: 30px 15px;
@@ -1209,12 +1568,33 @@ h1 {
     padding: 25px 15px;
   }
   
+  .victory-content h1 {
+    font-size: 2rem;
+  }
+  
+  .victory-content p {
+    font-size: 1.1rem;
+  }
+  
   .challenge-item {
     padding: 15px;
   }
   
   .modal-content {
     padding: 25px 15px;
+  }
+  
+  .modal-content h3 {
+    font-size: 1.3rem;
+  }
+  
+  .modal-content p {
+    font-size: 1rem;
+  }
+  
+  .option-btn {
+    font-size: 0.95rem;
+    padding: 10px 12px;
   }
   
   .progressive-map {
@@ -1233,6 +1613,11 @@ h1 {
   .answers-btn,
   .restart-btn {
     padding: 12px 20px;
-    font-size: 1rem;
+    font-size: 0.95rem;
+  }
+  
+  .victory-content > .share-btn {
+    font-size: 0.95rem;
+    padding: 10px 18px;
   }
 }
